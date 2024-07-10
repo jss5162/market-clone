@@ -53,5 +53,5 @@ main {
   transition: all 0.2s ease-in-out;
 }
 .write-button:hover {
-  background-color: var(--button-hover);
+  background-color: var(--button-hover-1);
 }
