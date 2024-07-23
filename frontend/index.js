@@ -15,8 +15,7 @@ function renderData(data) {
   const main = document.querySelector("main");
 
   data
-    .sort((a, b) => a)
-    .reverse()
+    .sort((a, b) => b)
     .forEach(async (obj) => {
       const itemListDiv = document.createElement("div");
       itemListDiv.className = "item-list";
