@@ -56,5 +56,5 @@ main {
   text-decoration: none;
 }
 .write-button:hover {
-  background-color: var(--button-hover-1);
+  background-color: var(--button-hover);
 }
