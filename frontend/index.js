@@ -55,7 +55,17 @@ function renderData(data) {
 }
 
 const fetchList = async () => {
-  const res = await fetch("/items");
+  const accessToken = window.localStorage.getItem("token");
+  const res = await fetch("/items", {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+  if (res.status === 401) {
+    alert("로그인 필요");
+    window.location.pathname = "frontend/login.html";
+    return;
+  }
   const data = await res.json();
   renderData(data);
 };

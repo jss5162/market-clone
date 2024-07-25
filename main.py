@@ -1,9 +1,11 @@
-from fastapi import FastAPI,UploadFile,Form,Response
+from fastapi import FastAPI,UploadFile,Form,Response,Depends
 from fastapi.staticfiles import StaticFiles
 from typing import Annotated
 import sqlite3
+from fastapi_login import LoginManager
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
+from fastapi_login.exceptions import InvalidCredentialsException
 con = sqlite3.connect('db.db',check_same_thread=False)
 cur = con.cursor()
 
@@ -23,6 +25,37 @@ CREATE TABLE IF NOT EXISTs items (
 
 
 app = FastAPI();
+SECRET='super-coding'
+manager= LoginManager(SECRET,'/login')
+@manager.user_loader()
+def query_user(data):
+    WHERE_STATEMENS = f'id="{data}"'
+    if type(data) ==dict:
+        WHERE_STATEMENS=f'''id="{data['id']}"'''
+    con.row_factory=sqlite3.Row
+    cur=con.cursor()
+    user = cur.execute(f"""
+                       SELECT * from users WHERE {WHERE_STATEMENS}
+                       """).fetchone()
+    return user
+
+
+@app.post('/login')
+def login(id:Annotated[str,Form()],
+    password:Annotated[str,Form()]):
+    user=query_user(id)
+    if not user:
+        raise InvalidCredentialsException
+    elif password != user['password']:
+        raise InvalidCredentialsException
+    access_token= manager.create_access_token(data={
+        'sub':{
+        'name':user['name'],
+        'email':user['email'],
+        'id':user['id']
+  } 
+        })
+    return {'access_token':access_token} 
 @app.post('/items')
 async def create_item(image:UploadFile,
                 title:Annotated[str,Form()],
@@ -41,7 +74,7 @@ async def create_item(image:UploadFile,
         return '200'
     
 @app.get('/items')
-async def get_items():
+async def get_items(user=Depends(manager)):
     con.row_factory=sqlite3.Row
     cur = con.cursor()
     rows = cur.execute(f"""
