@@ -1,4 +1,4 @@
-// @ts-nocheck
+import "../firebase.js";
 import App from "./App.svelte";
 
 const app = new App({
